@@ -1,76 +1,124 @@
 // ======================
-// DATA MANAGEMENT
+// Firebase References
 // ======================
-
-// Initialize user accounts
-let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
-
-// Current user session
-let currentUser = localStorage.getItem('currentUser');
-
-// Climb data structure
-let climbs = JSON.parse(localStorage.getItem('climbs')) || [];
+let currentUser = null;
+let climbs = [];
+let unsubscribeClimbs = null;
 
 // ======================
-// AUTHENTICATION
+// Authentication State
 // ======================
-
-function handleAuth() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const isLogin = document.getElementById('formTitle').textContent === 'Login';
-    const errorElement = document.getElementById('errorMessage');
-
-    // Validation
-    if (!username || !password) {
-        errorElement.textContent = 'Please fill in all fields.';
-        return;
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('usernameDisplay').textContent = user.email;
+    await loadProfile();
+    await loadClimbs();
+  } else {
+    // Not logged in - redirect to login page
+    if (window.location.pathname.includes('index.html')) {
+      window.location.href = 'climbSite.html';
     }
+  }
+});
 
-    if (isLogin) {
-        // Login logic
-        const account = accounts.find(acc => acc.username === username && acc.password === password);
-        if (!account) {
-            errorElement.textContent = 'Invalid username or password.';
-            return;
-        }
-    } else {
-        // Signup logic
-        if (accounts.some(acc => acc.username === username)) {
-            errorElement.textContent = 'Username already exists.';
-            return;
-        }
-        if (password.length < 6) {
-            errorElement.textContent = 'Password must be at least 6 characters.';
-            return;
-        }
-        accounts.push({ username, password });
-        localStorage.setItem('accounts', JSON.stringify(accounts));
-    }
-
-    // Successful auth
-    currentUser = username;
-    localStorage.setItem('currentUser', username);
-    window.location.href = 'index.html';
+// ======================
+// Data Management
+// ======================
+async function loadClimbs() {
+  if (!currentUser) return;
+  
+  // Unsubscribe any existing listener
+  if (unsubscribeClimbs) unsubscribeClimbs();
+  
+  // Set up real-time listener
+  unsubscribeClimbs = db.collection('climbs')
+    .where('userId', '==', currentUser.uid)
+    .orderBy('date', 'desc')
+    .onSnapshot(snapshot => {
+      climbs = [];
+      snapshot.forEach(doc => {
+        climbs.push({ id: doc.id, ...doc.data() });
+      });
+      displayClimbs();
+    });
 }
 
-function toggleForm() {
-    const formTitle = document.getElementById('formTitle');
-    const authButton = document.getElementById('authButton');
-    const toggleText = document.getElementById('toggleText');
-    const errorElement = document.getElementById('errorMessage');
+async function uploadMedia() {
+  if (!currentUser) return;
+  
+  const fileInput = document.getElementById('fileInput');
+  if (!fileInput.files.length) {
+    alert('Please select a file');
+    return;
+  }
 
-    errorElement.textContent = '';
-    
-    if (formTitle.textContent === 'Login') {
-        formTitle.textContent = 'Sign Up';
-        authButton.textContent = 'Sign Up';
-        toggleText.innerHTML = 'Already have an account? <a href="#" onclick="toggleForm()">Login</a>';
-    } else {
-        formTitle.textContent = 'Login';
-        authButton.textContent = 'Login';
-        toggleText.innerHTML = 'Don\'t have an account? <a href="#" onclick="toggleForm()">Sign Up</a>';
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  
+  reader.onload = async (e) => {
+    const mediaUrl = e.target.result;
+    const climbData = {
+      userId: currentUser.uid,
+      mediaUrl,
+      grade: document.getElementById('gradeInput').value,
+      styles: Array.from(document.querySelectorAll('input[name="style"]:checked')).map(el => el.value),
+      location: document.getElementById('locationInput').value,
+      color: document.getElementById('colorInput').value,
+      attempts: parseInt(document.getElementById('attemptsInput').value),
+      date: document.getElementById('dateInput').value,
+      notes: document.getElementById('notesInput').value,
+      climbType: document.querySelector('input[name="climbType"]:checked').value,
+      isProject: false,
+      isFavorite: false,
+      sendDate: null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+      await db.collection('climbs').add(climbData);
+      hideUploadPopup();
+    } catch (error) {
+      alert('Error saving climb: ' + error.message);
     }
+  };
+  
+  reader.readAsDataURL(file);
+}
+
+// ======================
+// Profile Management
+// ======================
+async function loadProfile() {
+  if (!currentUser) return;
+  
+  // Check email verification
+  const verificationBanner = document.getElementById('verificationBanner');
+  verificationBanner.style.display = currentUser.emailVerified ? 'none' : 'block';
+  
+  // Load profile data from Firestore
+  const userDoc = await db.collection('users').doc(currentUser.uid).get();
+  if (userDoc.exists) {
+    const userData = userDoc.data();
+    document.getElementById('userBio').textContent = userData.bio || "Click to add bio";
+    
+    // Load profile picture if exists
+    if (userData.profilePic) {
+      document.getElementById('userProfilePic').src = userData.profilePic;
+    }
+  }
+  
+  // Calculate stats
+  calculateStats();
+}
+
+// ======================
+// UI Functions
+// ======================
+function logout() {
+  auth.signOut().then(() => {
+    window.location.href = 'climbSite.html';
+  });
 }
 
 function logout() {
