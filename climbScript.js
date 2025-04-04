@@ -129,7 +129,8 @@ const tabs = {
 
 // Initialize the app
 function initApp() {
-    if (!currentUser && window.location.pathname.includes('index.html')) {
+    // Redirect to login if no current user
+    if (!currentUser) {
         window.location.href = 'climbSite.html';
         return;
     }
