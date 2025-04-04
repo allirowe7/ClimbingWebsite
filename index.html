@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClimbConnect - Your Climbing Companion</title>
+    <link href="https://cdn.jsdelivr.net/npm/chart.js" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .app-header {
+            background: var(--secondary);
+            color: white;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav-tabs li {
+            margin: 0 10px;
+        }
+        
+        .nav-tabs a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        
+        .nav-tabs a:hover, .nav-tabs a.active {
+            background: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Gallery Styles */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .thumbnail {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        video.thumbnail {
+            height: auto;
+        }
+        
+        .details {
+            padding: 15px;
+        }
+        
+        .details p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        
+        .details strong {
+            color: var(--dark);
+        }
+        
+        /* Analytics Dashboard Styles */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .analytics-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .heatmap-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .heatmap-item {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .heatmap-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .heatmap-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--dark);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        /* Upload Form Styles */
+        .plus-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--accent);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 100;
+            border: none;
+            transition: transform 0.3s;
+        }
+        
+        .plus-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .upload-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1001;
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        
+        .styles-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            flex: 1;
+            text-align: center;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #eee;
+            color: #333;
+        }
+        
+        /* Profile Styles */
+        .profile-header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .profile-pic-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .edit-profile-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: white;
+            color: var(--primary);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                padding: 10px;
+            }
+            
+            .nav-tabs {
+                margin-top: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-tabs li {
+                margin: 5px;
+            }
+            
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .upload-popup {
+                width: 95%;
+                padding: 15px;
+            }
+
+            /* Add these to the existing styles */
+.bio-container {
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.user-bio {
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+    transition: all 0.3s;
+    margin: 10px auto;
+    max-width: 80%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid transparent;
+}
+
+.user-bio:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.bio-edit {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-family: inherit;
+    resize: none;
+    margin: 10px auto;
+    display: block;
+    max-width: 80%;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: var(--secondary);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.profile-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    z-index: -1;
+}
+
+.profile-header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: #f5f7fa;
+    clip-path: polygon(0 0, 100% 100%, 100% 100%, 0 100%);
+    z-index: -1;
+}
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <div class="nav-container">
+            <a href="#" class="logo">BoulderBoard</a>
+            <ul class="nav-tabs">
+                <li><a href="#" class="active" onclick="showTab('bouldering')">Bouldering</a></li>
+                <li><a href="#" onclick="showTab('roped')">Roped</a></li>
+                <li><a href="#" onclick="showTab('projects')">Projects</a></li>
+                <li><a href="#" onclick="showTab('favorites')">Favorites</a></li>
+                <li><a href="#" onclick="showTab('analytics')">Analytics</a></li>
+                <li><a href="#" onclick="showTab('profile')">Profile</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Bouldering Tab -->
+    <div id="bouldering-tab" class="tab-content active">
+        <div class="gallery" id="bouldering-gallery"></div>
+    </div>
+
+    <!-- Roped Climbing Tab -->
+    <div id="roped-tab" class="tab-content">
+        <div class="gallery" id="roped-gallery"></div>
+    </div>
+
+    <!-- Projects Tab -->
+    <div id="projects-tab" class="tab-content">
+        <div class="gallery" id="projects-gallery"></div>
+    </div>
+
+    <!-- Favorites Tab -->
+    <div id="favorites-tab" class="tab-content">
+        <div class="gallery" id="favorites-gallery"></div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analytics-tab" class="tab-content">
+        <div class="dashboard">
+            <!-- Grade Distribution -->
+            <div class="analytics-card">
+                <h3>Grade Pyramid</h3>
+                <canvas id="gradeChart"></canvas>
+            </div>
+            
+            <!-- Style Radar -->
+            <div class="analytics-card">
+                <h3>Style Distribution</h3>
+                <canvas id="styleRadar"></canvas>
+            </div>
+            
+            <!-- Heatmap -->
+            <div class="analytics-card" style="grid-column: span 2">
+                <h3>Style Strength Heatmap</h3>
+                <div class="heatmap-container" id="styleHeatmap">
+                    <!-- Dynamically generated -->
+                </div>
+            </div>
+            
+            <!-- Progress Over Time -->
+            <div class="analytics-card" style="grid-column: span 2">
+                <h3>Progress Timeline</h3>
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Tab -->
+    <div id="profile-tab" class="tab-content">
+        <div class="profile-header">
+            <div class="profile-pic-container">
+                <img src="https://via.placeholder.com/150" alt="Profile" class="profile-pic" id="userProfilePic">
+                <button class="edit-profile-btn" onclick="document.getElementById('profilePhotoInput').click()">✏️</button>
+                <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;">
+            </div>
+            <h1 class="username" id="usernameDisplay"></h1>
+            <div class="bio-container">
+                <p class="user-bio" id="userBio" onclick="makeBioEditable()"></p>
+                <textarea id="bioEdit" class="bio-edit" style="display:none" rows="3"></textarea>
+            </div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="totalClimbs">0</div>
+                <div class="stat-label">Total Climbs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="hardestBoulder">V0</div>
+                <div class="stat-label">Hardest Boulder</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="hardestRoped">5.6</div>
+                <div class="stat-label">Hardest Roped</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="projectCount">0</div>
+                <div class="stat-label">Active Projects</div>
+            </div>
+        </div>
+        
+        <h2 style="margin: 30px 0 15px;">Recent Activity</h2>
+        <div class="gallery" id="recentClimbs"></div>
+    </div>
+
+    <!-- Upload Button -->
+    <button class="plus-button" onclick="showUploadPopup()">+</button>
+
+    <!-- Upload Popup -->
+    <div class="overlay" id="overlay" onclick="hideUploadPopup()"></div>
+    <div class="upload-popup" id="uploadPopup">
+        <h2 style="margin-top: 0;">Upload Climb</h2>
+        
+        <div class="form-group">
+            <label for="fileInput">Media (Image/Video):</label>
+            <input type="file" id="fileInput" accept="image/*,video/*">
+        </div>
+        
+        <div class="form-group">
+            <label>Climb Type:</label>
+            <div style="display: flex; gap: 15px;">
+                <label>
+                    <input type="radio" name="climbType" value="boulder" checked> Boulder
+                </label>
+                <label>
+                    <input type="radio" name="climbType" value="roped"> Roped
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="dateInput">Date of Climb:</label>
+            <input type="date" id="dateInput" required>
+        </div>
+
+        <div class="form-group">
+            <label for="gradeInput">Grade:</label>
+            <select id="gradeInput" required>
+                <option value="" disabled selected>Select grade</option>
+                <!-- Boulder grades -->
+                <option value="V0" class="boulder-grade">V0</option>
+                <option value="V1" class="boulder-grade">V1</option>
+                <option value="V2" class="boulder-grade">V2</option>
+                <option value="V3" class="boulder-grade">V3</option>
+                <option value="V4" class="boulder-grade">V4</option>
+                <option value="V5" class="boulder-grade">V5</option>
+                <option value="V6" class="boulder-grade">V6</option>
+                <option value="V7" class="boulder-grade">V7</option>
+                <option value="V8" class="boulder-grade">V8</option>
+                <option value="V9" class="boulder-grade">V9</option>
+                <option value="V10" class="boulder-grade">V10</option>
+                <option value="V11" class="boulder-grade">V11</option>
+                <option value="V12" class="boulder-grade">V12</option>
+                <option value="Comp" class="boulder-grade">Comp</option>
+                <option value="KidsComp" class="boulder-grade">KidsComp</option>
+
+                <!-- Roped grades -->
+                <option value="5.6" class="roped-grade" style="display:none">5.6</option>
+                <option value="5.7" class="roped-grade" style="display:none">5.7</option>
+                <option value="5.8" class="roped-grade" style="display:none">5.8</option>
+                <option value="5.9" class="roped-grade" style="display:none">5.9</option>
+                <option value="5.10a" class="roped-grade" style="display:none">5.10a</option>
+                <option value="5.10b" class="roped-grade" style="display:none">5.10b</option>
+                <option value="5.10c" class="roped-grade" style="display:none">5.10c</option>
+                <option value="5.10d" class="roped-grade" style="display:none">5.10d</option>
+                <option value="5.11a" class="roped-grade" style="display:none">5.11a</option>
+                <option value="5.11b" class="roped-grade" style="display:none">5.11b</option>
+                <option value="5.11c" class="roped-grade" style="display:none">5.11c</option>
+                <option value="5.11d" class="roped-grade" style="display:none">5.11d</option>
+                <option value="5.12a" class="roped-grade" style="display:none">5.12a</option>
+                <option value="5.12b" class="roped-grade" style="display:none">5.12b</option>
+                <option value="5.12c" class="roped-grade" style="display:none">5.12c</option>
+                <option value="5.12d" class="roped-grade" style="display:none">5.12d</option>
+                <option value="5.13a" class="roped-grade" style="display:none">5.13a</option>
+                <option value="5.13b" class="roped-grade" style="display:none">5.13b</option>
+                <option value="5.13c" class="roped-grade" style="display:none">5.13c</option>
+                <option value="5.13d" class="roped-grade" style="display:none">5.13d</option>
+                <option value="5.14a" class="roped-grade" style="display:none">5.14a</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Styles:</label>
+            <div class="styles-container">
+                <label><input type="checkbox" name="style" value="Crimp"> Crimp</label>
+                <label><input type="checkbox" name="style" value="Sloper"> Sloper</label>
+                <label><input type="checkbox" name="style" value="Overhang"> Overhang</label>
+                <label><input type="checkbox" name="style" value="Slab"> Slab</label>
+                <label><input type="checkbox" name="style" value="Dyno"> Dyno</label>
+                <label><input type="checkbox" name="style" value="Pocket"> Pocket</label>
+                <label><input type="checkbox" name="style" value="Pinch"> Pinch</label>
+                <label><input type="checkbox" name="style" value="Compression"> Compression</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="locationInput">Location (Gym Name):</label>
+            <input type="text" id="locationInput" placeholder="e.g., The Climbing Gym" required>
+        </div>
+
+        <div class="form-group">
+            <label for="colorInput">Route Color:</label>
+            <input type="text" id="colorInput" placeholder="e.g., Red, Blue, etc." required>
+        </div>
+
+        <div class="form-group">
+            <label for="attemptsInput">Number of Attempts:</label>
+            <input type="number" id="attemptsInput" min="1" value="1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="notesInput">Notes:</label>
+            <textarea id="notesInput" rows="3" placeholder="Any beta or thoughts about the climb..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" onclick="uploadMedia()">Upload</button>
+            <button class="btn btn-secondary" onclick="hideUploadPopup()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="climbScript.js"></script>
+</body>
+</html>
