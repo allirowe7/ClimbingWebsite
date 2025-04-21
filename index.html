@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClimbConnect - Your Climbing Companion</title>
+    <title>BoulderBoard</title>
     <link href="https://cdn.jsdelivr.net/npm/chart.js" rel="stylesheet">
     <style>
         :root {
@@ -306,6 +306,128 @@
             color: #333;
         }
         
+  /* Enhanced Exercises Tab Styles */
+.workout-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.workout-card h3 {
+    color: var(--secondary);
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.workout-details {
+    margin: 15px 0;
+    line-height: 1.6;
+}
+
+.workout-details strong {
+    color: var(--dark);
+}
+
+.workout-details ul {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.workout-details li {
+    margin-bottom: 5px;
+}
+
+.btn-small {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    margin: 5px 0;
+}
+
+.workout-history {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+.workout-history-entry {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.exercise-demo {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.exercise-demo:hover {
+    background: #2980b9;
+}
+
+/* Difficulty indicators */
+.difficulty {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.difficulty.beginner {
+    background: #2ecc71;
+    color: white;
+}
+
+.difficulty.intermediate {
+    background: #f39c12;
+    color: white;
+}
+
+.difficulty.advanced {
+    background: #e74c3c;
+    color: white;
+}
+
+/* Timer Styles */
+.timer-container {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    max-width: 400px;
+    margin: 20px auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.timer-phase {
+    font-size: 1.2rem;
+    color: var(--primary);
+    margin: 10px 0;
+}
+
+.timer-time {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 20px 0;
+    color: var(--secondary);
+}
+
+.timer-progress {
+    color: #777;
+    margin-bottom: 20px;
+}
         /* Profile Styles */
         .profile-header {
             text-align: center;
@@ -489,6 +611,7 @@
                 <li><a href="#" onclick="showTab('projects')">Projects</a></li>
                 <li><a href="#" onclick="showTab('favorites')">Favorites</a></li>
                 <li><a href="#" onclick="showTab('analytics')">Analytics</a></li>
+                <li><a href="#" onclick="showTab('exercises')">Exercises</a></li>
                 <li><a href="#" onclick="showTab('profile')">Profile</a></li>
             </ul>
         </div>
@@ -544,7 +667,179 @@
             </div>
         </div>
     </div>
-
+<!-- Exercises Tab -->
+<div id="exercises-tab" class="tab-content">
+    <div class="exercise-categories">
+        <button class="category-btn active" data-category="hangboard">Hangboard</button>
+        <button class="category-btn" data-category="strength">Strength</button>
+        <button class="category-btn" data-category="endurance">Endurance</button>
+        <button class="category-btn" data-category="mobility">Mobility</button>
+        <button class="category-btn" data-category="injury-prevention">Injury Prevention</button>
+    </div>
+    
+    <!-- Hangboard Workouts -->
+    <div id="hangboard-exercises" class="exercise-category">
+        <div class="workout-card">
+            <h3>7-3 Repeaters (Beastmaker Protocol)</h3>
+            <div class="workout-details">
+                <p><strong>Intensity:</strong> 60-80% max hang</p>
+                <p><strong>Sets:</strong> 4-6</p>
+                <p><strong>Reps:</strong> 6 hangs per set</p>
+                <p><strong>Work:</strong> 7 seconds</p>
+                <p><strong>Rest:</strong> 3 seconds between hangs</p>
+                <p><strong>Rest between sets:</strong> 3 minutes</p>
+                <p><strong>Hold:</strong> 20mm edge, half-crimp</p>
+                <button class="exercise-demo btn-small" data-exercise="7-3-repeaters">Watch Demo</button>
+            </div>
+            <button class="btn btn-primary start-timer" 
+                    data-work="7" data-rest="3" 
+                    data-reps="6" data-sets="4"
+                    data-prep="30"
+                    data-name="7-3 Repeaters"
+                    data-type="hangboard"
+                    data-details="20mm edge, half-crimp">Start Workout</button>
+        </div>
+        
+        <div class="workout-card">
+            <h3>Max Weighted Hangs</h3>
+            <div class="workout-details">
+                <p><strong>Intensity:</strong> 90-100% max effort</p>
+                <p><strong>Sets:</strong> 4-6</p>
+                <p><strong>Reps:</strong> 1 hang per set</p>
+                <p><strong>Work:</strong> 10 seconds</p>
+                <p><strong>Rest between sets:</strong> 3-5 minutes</p>
+                <p><strong>Hold:</strong> 10-15mm edge, open-hand</p>
+                <button class="exercise-demo btn-small" data-exercise="weighted-hangs">Watch Demo</button>
+            </div>
+            <button class="btn btn-primary start-timer"
+                    data-work="10" data-rest="0"
+                    data-reps="1" data-sets="4"
+                    data-prep="30"
+                    data-name="Max Weighted Hangs"
+                    data-type="hangboard"
+                    data-details="10-15mm edge, open-hand">Start Workout</button>
+        </div>
+    </div>
+    
+    <!-- Strength Workouts -->
+    <div id="strength-exercises" class="exercise-category" style="display:none">
+        <div class="workout-card">
+            <h3>Lock-Off Training</h3>
+            <div class="workout-details">
+                <p><strong>Exercise:</strong> Weighted pull-ups with 3-second hold at 90°</p>
+                <p><strong>Sets:</strong> 4</p>
+                <p><strong>Reps:</strong> 3-5</p>
+                <p><strong>Rest:</strong> 3 minutes between sets</p>
+                <p><strong>Progression:</strong> Add weight when you can do 5 reps with good form</p>
+                <button class="exercise-demo btn-small" data-exercise="lock-off-training">Watch Demo</button>
+            </div>
+        </div>
+        
+        <div class="workout-card">
+            <h3>Core Circuit</h3>
+            <div class="workout-details">
+                <p><strong>Exercises:</strong></p>
+                <ul>
+                    <li>Front lever progressions (3 sets of 8-12s)</li>
+                    <li>Hanging windshield wipers (3 sets of 6-8 per side)</li>
+                    <li>Weighted planks (3 sets of 30-45s)</li>
+                </ul>
+                <p><strong>Rest:</strong> 1 minute between exercises</p>
+                <button class="exercise-demo btn-small" data-exercise="core-circuit">Watch Demo</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Endurance Workouts -->
+    <div id="endurance-exercises" class="exercise-category" style="display:none">
+        <div class="workout-card">
+            <h3>4x4 Boulder Circuit</h3>
+            <div class="workout-details">
+                <p><strong>Format:</strong> 4 boulders back-to-back, 4 sets</p>
+                <p><strong>Intensity:</strong> V2-V4 below max grade</p>
+                <p><strong>Rest between boulders:</strong> 10 seconds</p>
+                <p><strong>Rest between sets:</strong> 4 minutes</p>
+                <p><strong>Focus:</strong> Smooth movement, controlled breathing</p>
+            </div>
+        </div>
+        
+        <div class="workout-card">
+            <h3>ARC Training</h3>
+            <div class="workout-details">
+                <p><strong>Duration:</strong> 20-30 minutes continuous climbing</p>
+                <p><strong>Intensity:</strong> Easy enough to maintain for duration</p>
+                <p><strong>Focus:</strong> Perfect foot placement, silent climbing</p>
+                <p><strong>Terrain:</strong> Vertical to slightly overhanging</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobility Workouts -->
+    <div id="mobility-exercises" class="exercise-category" style="display:none">
+        <div class="workout-card">
+            <h3>Hip Mobility Routine</h3>
+            <div class="workout-details">
+                <p><strong>Exercises:</strong></p>
+                <ul>
+                    <li>90/90 hip stretches (2x30s per side)</li>
+                    <li>Piriformis stretches (2x30s per side)</li>
+                    <li>Deep squat holds (3x30s)</li>
+                    <li>Hip CARs (controlled articular rotations) (10 per side)</li>
+                </ul>
+                <p><strong>Frequency:</strong> Daily or before climbing sessions</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Injury Prevention -->
+    <div id="injury-prevention-exercises" class="exercise-category" style="display:none">
+        <div class="workout-card">
+            <h3>Finger Tendon Care</h3>
+            <div class="workout-details">
+                <p><strong>Exercises:</strong></p>
+                <ul>
+                    <li>Rubber band extensions (3x20 reps)</li>
+                    <li>Rice bucket work (5 minutes)</li>
+                    <li>Finger rolls with light weight (3x12)</li>
+                </ul>
+                <p><strong>Frequency:</strong> 3-4x/week after climbing</p>
+            </div>
+        </div>
+        
+        <div class="workout-card">
+            <h3>Shoulder Prehab</h3>
+            <div class="workout-details">
+                <p><strong>Exercises:</strong></p>
+                <ul>
+                    <li>Band pull-aparts (3x15)</li>
+                    <li>External rotations (3x12 per arm)</li>
+                    <li>Scapular pull-ups (3x8)</li>
+                </ul>
+                <p><strong>Frequency:</strong> 2-3x/week</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Workout History -->
+    <div class="workout-history">
+        <h3>Your Workout History</h3>
+        <div id="workout-history"></div>
+    </div>
+    <!-- Timer Display -->
+    <div id="timer-display" class="timer-container" style="display:none">
+        <h3 id="current-workout-name">Workout Name</h3>
+        <div id="timer-phase" class="timer-phase">Preparation</div>
+        <div id="timer-time" class="timer-time">0:00</div>
+        <div id="timer-progress" class="timer-progress">Set 1 of 3 | Rep 1 of 6</div>
+        <div id="timer-controls">
+            <button id="timer-cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+        <div id="timer-complete" style="display:none">
+            <h3>Workout Complete!</h3>
+            <button id="timer-done" class="btn btn-primary">Done</button>
+        </div>
+    </div>
+</div>
     <!-- Profile Tab -->
     <div id="profile-tab" class="tab-content">
         <div class="profile-header">

@@ -113,6 +113,159 @@ function saveBio() {
     bioEdit.style.display = 'none';
     bioDisplay.style.display = 'block';
 }
+
+
+// ======================
+// EXERCISES TAB
+// ======================
+
+let timerInterval;
+let currentWorkout = null;
+
+let workoutHistory = JSON.parse(localStorage.getItem(`${currentUser}_workoutHistory`)) || [];
+
+function logWorkout(workout) {
+    workoutHistory.push({
+        date: new Date().toISOString(),
+        workout: workout.name,
+        type: workout.type,
+        details: workout.details
+    });
+    localStorage.setItem(`${currentUser}_workoutHistory`, JSON.stringify(workoutHistory));
+}
+
+function startTimer(workout) {
+    currentWorkout = workout;
+    let currentSet = 1;
+    let currentRep = 1;
+    let secondsLeft = workout.prepTime || 10;
+    let isRestPeriod = false;
+
+    // Update UI
+    document.getElementById('timer-display').style.display = 'block';
+    document.getElementById('current-workout-name').textContent = workout.name;
+    document.getElementById('timer-phase').textContent = 'Preparation';
+    updateTimerDisplay(secondsLeft, currentSet, currentRep);
+    document.querySelectorAll('.workout-card').forEach(c => c.style.display = 'none');
+
+    timerInterval = setInterval(() => {
+        secondsLeft--;
+        updateTimerDisplay(secondsLeft, currentSet, currentRep);
+
+        if (secondsLeft <= 0) {
+            if (isRestPeriod) {
+                currentRep++;
+                if (currentRep > workout.reps) {
+                    currentSet++;
+                    currentRep = 1;
+                    if (currentSet > workout.sets) {
+                        clearInterval(timerInterval);
+                        endWorkout();
+                        return;
+                    }
+                    secondsLeft = workout.restBetweenSets;
+                    document.getElementById('timer-phase').textContent = `Set ${currentSet} Rest`;
+                } else {
+                    secondsLeft = workout.workTime;
+                    isRestPeriod = false;
+                    document.getElementById('timer-phase').textContent = `Set ${currentSet} Rep ${currentRep} Work`;
+                }
+            } else {
+                secondsLeft = workout.restTime;
+                isRestPeriod = true;
+                document.getElementById('timer-phase').textContent = `Set ${currentSet} Rep ${currentRep} Rest`;
+            }
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay(seconds, currentSet, currentRep) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    document.getElementById('timer-time').textContent = `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    document.getElementById('timer-progress').textContent = 
+        `Set ${currentSet} of ${currentWorkout.sets} | Rep ${currentRep} of ${currentWorkout.reps}`;
+}
+
+function endWorkout() {
+    document.getElementById('timer-complete').style.display = 'block';
+    document.getElementById('timer-controls').style.display = 'none';
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    document.getElementById('timer-display').style.display = 'none';
+    document.querySelectorAll('.workout-card').forEach(c => c.style.display = 'block');
+}
+
+function showExerciseCategory(category) {
+    document.querySelectorAll('.exercise-category').forEach(el => el.style.display = 'none');
+    document.getElementById(`${category}-exercises`).style.display = 'block';
+    
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.toLowerCase().includes(category)) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+function showWorkoutHistory() {
+    const historyContainer = document.getElementById('workout-history');
+    historyContainer.innerHTML = '';
+    
+    if (workoutHistory.length === 0) {
+        historyContainer.innerHTML = '<p>No workout history yet. Complete a workout to see it here!</p>';
+        return;
+    }
+    
+    workoutHistory.slice().reverse().forEach(workout => {
+        const entry = document.createElement('div');
+        entry.className = 'workout-history-entry';
+        entry.innerHTML = `
+            <p><strong>${new Date(workout.date).toLocaleDateString()}</strong></p>
+            <p>${workout.workout} (${workout.type})</p>
+            ${workout.details ? `<p>${workout.details}</p>` : ''}
+        `;
+        historyContainer.appendChild(entry);
+    });
+}
+
+function initExercisesTab() {
+    // Set up category buttons
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            showExerciseCategory(category);
+        });
+    });
+
+    // Set up timer buttons
+    document.querySelectorAll('.start-timer').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.workout-card');
+            startTimer({
+                name: card.querySelector('h3').textContent,
+                workTime: parseInt(this.dataset.work),
+                restTime: parseInt(this.dataset.rest),
+                reps: parseInt(this.dataset.reps),
+                sets: parseInt(this.dataset.sets),
+                prepTime: parseInt(this.dataset.prep),
+                restBetweenSets: 180
+            });
+        });
+    });
+
+    // Timer controls
+    document.getElementById('timer-cancel').addEventListener('click', resetTimer);
+    document.getElementById('timer-done').addEventListener('click', resetTimer);
+
+    // Show default category
+    showExerciseCategory('hangboard');
+
+    showWorkoutHistory();
+}
+
 // ======================
 // CORE FUNCTIONALITY
 // ======================
@@ -124,6 +277,7 @@ const tabs = {
     projects: document.getElementById('projects-tab'),
     favorites: document.getElementById('favorites-tab'),
     analytics: document.getElementById('analytics-tab'),
+    exercises: document.getElementById('exercises-tab'),
     profile: document.getElementById('profile-tab')
 };
 
@@ -174,6 +328,9 @@ function showTab(tabName, fromClick = true) {
             break;
         case 'analytics':
             initAnalytics();
+            break;
+        case 'exercises':
+            initExercisesTab();
             break;
         default:
             displayClimbs();
